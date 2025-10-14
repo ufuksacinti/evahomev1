@@ -33,6 +33,7 @@ class HomeController extends Controller
         // Collections - cached
         $shopCollections = $this->cacheService->getShopCollections()->take(4);
         $energyCollections = $this->cacheService->getEnergyCollections()->take(4);
+        $allEnergyCollections = $this->cacheService->getEnergyCollections(); // All energy collections for interactive hero
 
         // Active campaigns
         $campaigns = Campaign::where('is_active', true)
@@ -54,6 +55,7 @@ class HomeController extends Controller
             'bestSellers',
             'shopCollections',
             'energyCollections',
+            'allEnergyCollections',
             'campaigns',
             'stats'
         ));

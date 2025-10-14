@@ -3,7 +3,7 @@
 @section('title', 'Ana Sayfa - EVA HOME')
 
 @section('content')
-<!-- Hero Section -->
+<!-- Interactive Hero Section -->
 <section class="relative bg-white py-20 lg:py-32 overflow-hidden">
     <!-- Decorative Wax Seals -->
     <div class="absolute top-20 right-10 opacity-5">
@@ -20,14 +20,44 @@
                 <div class="w-24 h-1 bg-eva-gold mb-8"></div>
                 
                 <x-heading level="1" class="mb-6">
-                    Evinize<br/>
-                    <span class="text-eva-gold">Enerji Katın</span>
+                    <span class="text-eva-gold">Kokunun Duyguyla</span><br/>
+                    Buluştuğu Yer
                 </x-heading>
                 
-                <p class="text-xl text-eva-text mb-8 leading-relaxed">
-                    8 farklı enerji koleksiyonu ile evinize huzur, sevgi ve pozitif enerji getirin. 
-                    Her ürün özenle el yapımı ve doğal malzemelerden üretilir.
-                </p>
+                <!-- Interactive Energy Collection Icons -->
+                <div class="mb-8">
+                    <p class="text-lg text-eva-text mb-6">
+                        Her koleksiyon, farklı bir enerji ve hikaye taşır. Keşfetmek için üzerine gelin:
+                    </p>
+                    
+                    <div class="grid grid-cols-4 gap-3 mb-6">
+                        @foreach($allEnergyCollections as $collection)
+                            <div class="energy-icon group cursor-pointer transition-all duration-300 hover:scale-110"
+                                 data-collection="{{ $collection->id }}"
+                                 style="background-color: {{ $collection->color_hex }};"
+                                 onmouseover="showCollectionStory('{{ $collection->id }}')"
+                                 onmouseout="hideCollectionStory()">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300">
+                                    <span class="text-white text-lg font-bold opacity-80 group-hover:opacity-100 transition-opacity">
+                                        {{ strtoupper(substr($collection->name, 0, 1)) }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-center mt-2 text-eva-text font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    {{ $collection->name }}
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                
+                <!-- Collection Story Display -->
+                <div id="collection-story" class="mb-8 p-6 rounded-lg border-2 border-eva-gold/20 bg-gradient-to-r from-eva-soft-white to-white transition-all duration-500 opacity-0 transform translate-y-4">
+                    <div id="story-content">
+                        <h3 id="story-title" class="font-heading text-xl text-eva-heading mb-3"></h3>
+                        <p id="story-description" class="text-eva-text leading-relaxed"></p>
+                        <p id="story-feeling" class="text-sm text-eva-muted mt-3 italic"></p>
+                    </div>
+                </div>
                 
                 <div class="flex gap-4">
                     <a href="#collections" 
@@ -41,21 +71,34 @@
                 </div>
             </div>
 
-            <!-- Right Content - Hero Visual -->
+            <!-- Right Content - Dynamic Collection Visual -->
             <div class="order-1 lg:order-2">
                 <div class="relative">
-                    <div class="bg-gradient-to-br from-eva-soft-white to-white rounded-2xl p-12 flex items-center justify-center relative overflow-hidden shadow-2xl border-2 border-eva-gold/20"
+                    <div id="collection-visual" class="bg-gradient-to-br from-eva-soft-white to-white rounded-2xl p-12 flex items-center justify-center relative overflow-hidden shadow-2xl border-2 border-eva-gold/20 transition-all duration-700"
                          style="min-height: 500px;">
-                        <!-- Decorative circles -->
-                        <div class="absolute top-8 right-8 w-32 h-32 rounded-full opacity-20"
-                             style="background-color: var(--color-jasmine);"></div>
-                        <div class="absolute bottom-8 left-8 w-24 h-24 rounded-full opacity-20"
-                             style="background-color: var(--color-lavender);"></div>
                         
-                        <div class="text-center z-10">
+                        <!-- Default State -->
+                        <div id="default-visual" class="text-center z-10 transition-opacity duration-500">
                             <x-wax-seal type="gold" size="2xl" class="mx-auto mb-6" />
-                            <p class="font-heading text-2xl text-eva-heading font-semibold mb-2">Premium Ürünler</p>
-                            <p class="text-eva-muted">El yapımı, doğal malzeme</p>
+                            <p class="font-heading text-2xl text-eva-heading font-semibold mb-2">8 Enerji Koleksiyonu</p>
+                            <p class="text-eva-muted">Her biri farklı bir hikaye</p>
+                        </div>
+                        
+                        <!-- Dynamic Collection Visual -->
+                        <div id="dynamic-visual" class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500">
+                            <div class="text-center">
+                                <div id="collection-icon" class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl">
+                                    <span id="collection-letter" class="text-white text-4xl font-bold"></span>
+                                </div>
+                                <h3 id="collection-name" class="font-heading text-2xl text-eva-heading font-semibold mb-2"></h3>
+                                <p id="collection-subtitle" class="text-eva-muted"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Decorative elements -->
+                        <div id="decorative-circles" class="absolute inset-0 pointer-events-none">
+                            <div class="absolute top-8 right-8 w-32 h-32 rounded-full opacity-20 transition-all duration-700"></div>
+                            <div class="absolute bottom-8 left-8 w-24 h-24 rounded-full opacity-20 transition-all duration-700"></div>
                         </div>
                     </div>
                 </div>
@@ -63,6 +106,82 @@
         </div>
     </div>
 </section>
+
+<!-- Collection Data for JavaScript -->
+<script>
+const energyCollections = @json($allEnergyCollections);
+
+function showCollectionStory(collectionId) {
+    const collection = energyCollections.find(c => c.id == collectionId);
+    if (!collection) return;
+    
+    // Update story content
+    document.getElementById('story-title').textContent = collection.name + ' Hikayesi';
+    document.getElementById('story-description').textContent = collection.description || 'Bu koleksiyon, özel enerjisi ve anlamıyla evinize huzur getirir.';
+    document.getElementById('story-feeling').textContent = collection.visual_feeling || collection.color_description;
+    
+    // Show story container
+    const storyContainer = document.getElementById('collection-story');
+    storyContainer.style.opacity = '1';
+    storyContainer.style.transform = 'translateY(0)';
+    
+    // Update visual
+    updateCollectionVisual(collection);
+}
+
+function hideCollectionStory() {
+    const storyContainer = document.getElementById('collection-story');
+    storyContainer.style.opacity = '0';
+    storyContainer.style.transform = 'translateY(1rem)';
+    
+    // Reset to default visual
+    resetToDefaultVisual();
+}
+
+function updateCollectionVisual(collection) {
+    // Hide default, show dynamic
+    document.getElementById('default-visual').style.opacity = '0';
+    document.getElementById('dynamic-visual').style.opacity = '1';
+    
+    // Update content
+    document.getElementById('collection-letter').textContent = collection.name.charAt(0).toUpperCase();
+    document.getElementById('collection-name').textContent = collection.name;
+    document.getElementById('collection-subtitle').textContent = collection.visual_feeling || 'Özel enerji koleksiyonu';
+    
+    // Update colors
+    const icon = document.getElementById('collection-icon');
+    icon.style.backgroundColor = collection.color_hex;
+    
+    const visual = document.getElementById('collection-visual');
+    visual.style.borderColor = collection.color_hex + '40';
+    
+    // Update decorative circles
+    const circles = document.querySelectorAll('#decorative-circles > div');
+    circles.forEach(circle => {
+        circle.style.backgroundColor = collection.color_hex;
+    });
+}
+
+function resetToDefaultVisual() {
+    // Show default, hide dynamic
+    document.getElementById('default-visual').style.opacity = '1';
+    document.getElementById('dynamic-visual').style.opacity = '0';
+    
+    // Reset colors
+    const visual = document.getElementById('collection-visual');
+    visual.style.borderColor = 'rgba(216, 179, 111, 0.2)';
+    
+    // Reset decorative circles
+    const circles = document.querySelectorAll('#decorative-circles > div');
+    circles.forEach((circle, index) => {
+        if (index === 0) {
+            circle.style.backgroundColor = 'var(--color-jasmine)';
+        } else {
+            circle.style.backgroundColor = 'var(--color-lavender)';
+        }
+    });
+}
+</script>
 
 <!-- Shop Collections Section -->
 @if($shopCollections->count() > 0)
