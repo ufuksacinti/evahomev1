@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EvaHome Test</title>
+</head>
+<body>
+    <h1>EvaHome Test Sayfası</h1>
+    <p>Bu sayfa görünüyorsa, sunucu çalışıyor!</p>
+    <p>Tarih: <script>document.write(new Date());</script></p>
+    
+    <h2>PHP Test</h2>
+    <p>PHP Versiyonu: <?php echo phpversion(); ?></p>
+    <p>Sunucu: <?php echo $_SERVER['SERVER_SOFTWARE']; ?></p>
+    
+    <h2>Dosya Kontrolü</h2>
+    <p>composer.phar: <?php echo file_exists('composer.phar') ? '✅ Mevcut' : '❌ Yok'; ?></p>
+    <p>vendor klasörü: <?php echo is_dir('vendor') ? '✅ Mevcut' : '❌ Yok'; ?></p>
+    <p>.env dosyası: <?php echo file_exists('.env') ? '✅ Mevcut' : '❌ Yok'; ?></p>
+    
+    <h2>Composer Install</h2>
+    <form method="post">
+        <button type="submit" name="install">Composer Install Çalıştır</button>
+    </form>
+    
+    <?php
+    if (isset($_POST['install'])) {
+        echo "<h3>Composer Install Çalıştırılıyor...</h3>";
+        
+        // Composer.phar indir
+        if (!file_exists('composer.phar')) {
+            echo "<p>Composer.phar indiriliyor...</p>";
+            $composerContent = file_get_contents('https://getcomposer.org/composer.phar');
+            if ($composerContent !== false) {
+                file_put_contents('composer.phar', $composerContent);
+                echo "<p style='color: green;'>✅ composer.phar indirildi</p>";
+            }
+        }
+        
+        // Composer install
+        echo "<p>Composer install çalıştırılıyor...</p>";
+        $output = [];
+        $return_var = 0;
+        exec('php composer.phar install --no-dev --optimize-autoloader 2>&1', $output, $return_var);
+        
+        echo "<div style='background: #f0f0f0; padding: 10px; margin: 10px 0;'>";
+        echo "<strong>Çıktı:</strong><br>";
+        foreach ($output as $line) {
+            echo htmlspecialchars($line) . "<br>";
+        }
+        echo "</div>";
+        
+        if ($return_var === 0) {
+            echo "<p style='color: green; font-size: 18px;'>🎉 Composer install başarılı!</p>";
+            echo "<p><a href='/' style='background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ana Siteye Git</a></p>";
+        } else {
+            echo "<p style='color: red; font-size: 18px;'>❌ Composer install başarısız!</p>";
+        }
+    }
+    ?>
+</body>
+</html>
